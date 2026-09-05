@@ -6,3 +6,4 @@
 - Solo build — no parallelization across phases needed
 - Hosting: GitHub Pages (not Firebase Hosting) — reusing proven prior setup
 - Voice (MVP): browser's built-in Web Speech API, not Bhashini — avoids government API onboarding risk before core app works
+- Firestore rules require anonymous auth + block edit/delete, but don't yet scope reads strictly per-pairing-code — acceptable simplification for demo, flagged as a fast-follow

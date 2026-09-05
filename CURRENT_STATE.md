@@ -4,7 +4,7 @@ Last updated: September 5, 2026
 
 ## What's working
 
-- Nothing built yet — Phase 0 (project setup) in progress
+- Phase 0 (project setup) complete: Vite + React + Tailwind CSS v4 running and deployed to GitHub Pages, docs established, Firebase project created with anonymous auth and Firestore security rules deployed
 
 ## What's half-built
 
@@ -16,4 +16,4 @@ Last updated: September 5, 2026
 
 ## Next task
 
-- 0.3 — Firebase project setup
+- Phase 1 — Core App Development
