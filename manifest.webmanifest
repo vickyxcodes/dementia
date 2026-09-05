@@ -1,0 +1,1 @@
+{"name":"Dementia Cognitive Care","short_name":"CognitiveCare","description":"Cognitive care and memory stimulation app for elderly patients","start_url":"/dementia/","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","lang":"en","scope":"/dementia/","icons":[{"src":"favicon.svg","sizes":"192x192 512x512","type":"image/svg+xml","purpose":"any maskable"}]}
