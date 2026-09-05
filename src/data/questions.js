@@ -53,4 +53,4 @@ export const memoryRecallQuestions = [
       { label: "🐱 Cat", isCorrect: true },
     ],
   },
-]
+];

@@ -1,8 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { memoryRecallQuestions } from "../data/questions";
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { memoryRecallQuestions } from '../data/questions'
+import { logAnswer } from '../db'
 
 export default function Play() {
+  const navigate = useNavigate();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState({ type: null, count: 0 });
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isSessionComplete, setIsSessionComplete] = useState(false);
   const navigate = useNavigate()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [score, setScore] = useState(0)
@@ -10,21 +20,38 @@ export default function Play() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [isSessionComplete, setIsSessionComplete] = useState(false)
 
+  const currentQuestion = memoryRecallQuestions[currentIndex];
   const currentQuestion = memoryRecallQuestions[currentIndex]
 
   const handleSelectOption = (option) => {
+    if (selectedOption !== null) return; // Prevent multiple taps during delay
     if (selectedOption !== null) return // Prevent multiple taps during delay
+
+    setSelectedOption(option);
+    // Immediately log answer record to IndexedDB
+    logAnswer({
+      domain: currentQuestion.domain,
+      correct: option.isCorrect,
+      timestamp: new Date().toISOString(),
+    })
 
     setSelectedOption(option)
 
     if (option.isCorrect) {
+      setScore((prev) => prev + 1);
       setScore((prev) => prev + 1)
       setStreak((prev) => ({
+        type: "correct",
+        count: prev.type === "correct" ? prev.count + 1 : 1,
+      }));
         type: 'correct',
         count: prev.type === 'correct' ? prev.count + 1 : 1,
       }))
     } else {
       setStreak((prev) => ({
+        type: "incorrect",
+        count: prev.type === "incorrect" ? prev.count + 1 : 1,
+      }));
         type: 'incorrect',
         count: prev.type === 'incorrect' ? prev.count + 1 : 1,
       }))
@@ -33,15 +60,26 @@ export default function Play() {
     // Auto-advance after 1.5 seconds
     setTimeout(() => {
       if (currentIndex + 1 < memoryRecallQuestions.length) {
+        setCurrentIndex((prev) => prev + 1);
+        setSelectedOption(null);
         setCurrentIndex((prev) => prev + 1)
         setSelectedOption(null)
       } else {
+        setIsSessionComplete(true);
         setIsSessionComplete(true)
       }
+    }, 1500);
+  };
     }, 1500)
   }
 
   const restartGame = () => {
+    setCurrentIndex(0);
+    setScore(0);
+    setStreak({ type: null, count: 0 });
+    setSelectedOption(null);
+    setIsSessionComplete(false);
+  };
     setCurrentIndex(0)
     setScore(0)
     setStreak({ type: null, count: 0 })
@@ -57,6 +95,8 @@ export default function Play() {
             Session Complete
           </h1>
           <p className="text-2xl font-semibold text-slate-300">
+            You scored <span className="text-amber-400 font-bold">{score}</span>{" "}
+            out of {memoryRecallQuestions.length}
             You scored <span className="text-amber-400 font-bold">{score}</span> out of {memoryRecallQuestions.length}
           </p>
           <div className="flex flex-col gap-4 pt-4">
@@ -69,6 +109,7 @@ export default function Play() {
             </button>
             <button
               type="button"
+              onClick={() => navigate("/")}
               onClick={() => navigate('/')}
               className="min-h-[72px] w-full px-8 py-4 text-xl font-bold text-white bg-slate-700 hover:bg-slate-600 active:scale-95 rounded-2xl transition-all cursor-pointer"
             >
@@ -77,6 +118,7 @@ export default function Play() {
           </div>
         </div>
       </main>
+    );
     )
   }
 
@@ -89,11 +131,16 @@ export default function Play() {
             Question {currentIndex + 1} of {memoryRecallQuestions.length}
           </span>
           {streak.count > 1 && (
-            <span className={`text-lg font-bold px-3 py-1 rounded-full ${
-              streak.type === 'correct'
-                ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-600'
-                : 'bg-rose-900/60 text-rose-300 border border-rose-600'
-            }`}>
+            <span
+              className={`text-lg font-bold px-3 py-1 rounded-full ${
+                streak.type === "correct"
+                  ? "bg-emerald-900/60 text-emerald-300 border border-emerald-600"
+                  : "bg-rose-900/60 text-rose-300 border border-rose-600"
+                streak.type === 'correct'
+                  ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-600'
+                  : 'bg-rose-900/60 text-rose-300 border border-rose-600'
+              }`}
+            >
               {streak.count} in a row
             </span>
           )}
@@ -107,18 +154,28 @@ export default function Play() {
         {/* 2 large tappable option buttons */}
         <div className="w-full flex flex-col gap-5">
           {currentQuestion.options.map((option, idx) => {
+            const isSelected = selectedOption === option;
+            const hasAnswered = selectedOption !== null;
             const isSelected = selectedOption === option
             const hasAnswered = selectedOption !== null
 
-            let buttonStyle = "bg-slate-800 text-white border-2 border-slate-700 hover:bg-slate-750 hover:border-slate-500"
+            let buttonStyle =
+              "bg-slate-800 text-white border-2 border-slate-700 hover:bg-slate-750 hover:border-slate-500";
+              'bg-slate-800 text-white border-2 border-slate-700 hover:bg-slate-750 hover:border-slate-500'
 
             if (hasAnswered) {
               if (option.isCorrect) {
-                buttonStyle = "bg-emerald-600 text-white border-2 border-emerald-400 shadow-emerald-900/50 shadow-lg"
+                buttonStyle =
+                  "bg-emerald-600 text-white border-2 border-emerald-400 shadow-emerald-900/50 shadow-lg";
+                  'bg-emerald-600 text-white border-2 border-emerald-400 shadow-emerald-900/50 shadow-lg'
               } else if (isSelected && !option.isCorrect) {
-                buttonStyle = "bg-rose-600 text-white border-2 border-rose-400 shadow-rose-900/50 shadow-lg"
+                buttonStyle =
+                  "bg-rose-600 text-white border-2 border-rose-400 shadow-rose-900/50 shadow-lg";
+                  'bg-rose-600 text-white border-2 border-rose-400 shadow-rose-900/50 shadow-lg'
               } else {
-                buttonStyle = "bg-slate-800/40 text-slate-500 border-2 border-slate-800"
+                buttonStyle =
+                  "bg-slate-800/40 text-slate-500 border-2 border-slate-800";
+                  'bg-slate-800/40 text-slate-500 border-2 border-slate-800'
               }
             }
 
@@ -132,12 +189,17 @@ export default function Play() {
               >
                 <span>{option.label}</span>
                 {hasAnswered && option.isCorrect && (
-                  <span className="text-2xl" aria-label="Correct">✓</span>
+                  <span className="text-2xl" aria-label="Correct">
+                    ✓
+                  </span>
                 )}
                 {hasAnswered && isSelected && !option.isCorrect && (
-                  <span className="text-2xl" aria-label="Incorrect">✕</span>
+                  <span className="text-2xl" aria-label="Incorrect">
+                    ✕
+                  </span>
                 )}
               </button>
+            );
             )
           })}
         </div>
@@ -145,14 +207,19 @@ export default function Play() {
         {/* Subtitle feedback message */}
         <div className="h-10 mt-6 flex items-center justify-center">
           {selectedOption && (
-            <p className={`text-2xl font-bold transition-opacity ${
-              selectedOption.isCorrect ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
+            <p
+              className={`text-2xl font-bold transition-opacity ${
+                selectedOption.isCorrect ? "text-emerald-400" : "text-rose-400"
+                selectedOption.isCorrect ? 'text-emerald-400' : 'text-rose-400'
+              }`}
+            >
+              {selectedOption.isCorrect ? "Great job!" : "Good try!"}
               {selectedOption.isCorrect ? 'Great job!' : 'Good try!'}
             </p>
           )}
         </div>
       </div>
     </main>
+  );
   )
 }
