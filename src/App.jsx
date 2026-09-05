@@ -1,9 +1,14 @@
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home.jsx";
+import Play from "./pages/Play.jsx";
+
 export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold text-center">
-        Dementia App — Setup Test
-      </h1>
-    </div>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/play" element={<Play />} />
+      </Routes>
+    </HashRouter>
   );
 }
