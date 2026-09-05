@@ -4,7 +4,8 @@ Last updated: September 5, 2026
 
 ## What's working
 
-- Phase 0 (project setup) complete: Vite + React + Tailwind CSS v4 running and deployed to GitHub Pages, docs established, Firebase project created with anonymous auth and Firestore security rules deployed
+- Phase 0 setup complete (GitHub Pages, repo, docs, Firebase project, Firestore rules).
+- Task 1.1 complete: App shell with elderly-accessible Home screen (large 88px high-contrast Play button), client-side routing (`/` and `/play`), and full offline PWA support with background auto-updates.
 
 ## What's half-built
 
@@ -16,4 +17,4 @@ Last updated: September 5, 2026
 
 ## Next task
 
-- Phase 1 — Core App Development
+- 1.2
